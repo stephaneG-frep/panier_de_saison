@@ -20,7 +20,7 @@ class SmartBasketScreen extends StatelessWidget {
   final Set<String> favoriteRecipeIds;
   final Future<void> Function(String id) onToggleBasketItem;
   final Future<void> Function(String id) onToggleRecipeFavorite;
-  final Future<void> Function(Recipe recipe) onAddRecipeIngredients;
+  final Future<bool> Function(Recipe recipe) onAddRecipeIngredients;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +60,7 @@ class SmartBasketScreen extends StatelessWidget {
               children: basketItems
                   .map(
                     (item) => InputChip(
-                      avatar: Text(item.emoji),
+                      avatar: Text(item.displayEmoji),
                       label: Text(item.name),
                       onDeleted: () => onToggleBasketItem(item.id),
                     ),
@@ -130,7 +130,7 @@ class SmartBasketScreen extends StatelessWidget {
                 .take(24)
                 .map(
                   (item) => ActionChip(
-                    avatar: Text(item.emoji),
+                    avatar: Text(item.displayEmoji),
                     label: Text(item.name),
                     onPressed: () => onToggleBasketItem(item.id),
                   ),

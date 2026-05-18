@@ -10,7 +10,14 @@ import 'shopping_list_screen.dart';
 import 'smart_basket_screen.dart';
 
 class MainNavigation extends StatefulWidget {
-  const MainNavigation({super.key});
+  const MainNavigation({
+    super.key,
+    required this.themeMode,
+    required this.onToggleThemeMode,
+  });
+
+  final ThemeMode themeMode;
+  final VoidCallback onToggleThemeMode;
 
   @override
   State<MainNavigation> createState() => _MainNavigationState();
@@ -75,18 +82,20 @@ class _MainNavigationState extends State<MainNavigation> {
     await _storage.saveSmartBasket(_smartBasket);
   }
 
-  Future<void> _addItemToShopping(SeasonalItem item) async {
-    await _addShoppingEntries([
+  Future<bool> _addItemToShopping(SeasonalItem item) async {
+    final addedToShopping = await _addShoppingEntries([
       ShoppingEntry(
         id: item.id,
         name: item.name,
         category: item.type == SeasonalItemType.fruit ? 'fruits' : 'legumes',
       ),
     ]);
+    await _addToSmartBasket([item.id]);
+    return addedToShopping;
   }
 
-  Future<void> _addRecipeIngredients(Recipe recipe) async {
-    await _addShoppingEntries(
+  Future<bool> _addRecipeIngredients(Recipe recipe) async {
+    final addedToShopping = await _addShoppingEntries(
       recipe.ingredients.map((name) {
         return ShoppingEntry(
           id: 'ingredient_${name.toLowerCase().replaceAll(' ', '_')}',
@@ -95,18 +104,34 @@ class _MainNavigationState extends State<MainNavigation> {
         );
       }).toList(),
     );
+    await _addToSmartBasket(recipe.seasonalItemIds);
+    return addedToShopping;
   }
 
-  Future<void> _addShoppingEntries(List<ShoppingEntry> entries) async {
+  Future<bool> _addShoppingEntries(List<ShoppingEntry> entries) async {
     final currentIds = _shoppingList
         .map((entry) => entry.id.toLowerCase())
         .toSet();
     final additions = entries
         .where((entry) => !currentIds.contains(entry.id.toLowerCase()))
         .toList();
-    if (additions.isEmpty) return;
+    if (additions.isEmpty) return false;
     setState(() => _shoppingList = [..._shoppingList, ...additions]);
     await _storage.saveShoppingList(_shoppingList);
+    return true;
+  }
+
+  Future<void> _addToSmartBasket(List<String> itemIds) async {
+    var changed = false;
+    for (final id in itemIds) {
+      if (!_smartBasket.contains(id)) {
+        _smartBasket.add(id);
+        changed = true;
+      }
+    }
+    if (!changed) return;
+    setState(() {});
+    await _storage.saveSmartBasket(_smartBasket);
   }
 
   Future<void> _updateShoppingList(List<ShoppingEntry> entries) async {
@@ -190,6 +215,17 @@ class _MainNavigationState extends State<MainNavigation> {
 
     return Scaffold(
       body: pages[_index],
+      floatingActionButton: FloatingActionButton(
+        tooltip: widget.themeMode == ThemeMode.dark
+            ? 'Passer en mode clair'
+            : 'Passer en mode sombre',
+        onPressed: widget.onToggleThemeMode,
+        child: Icon(
+          widget.themeMode == ThemeMode.dark
+              ? Icons.light_mode_outlined
+              : Icons.dark_mode_outlined,
+        ),
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (value) => setState(() => _index = value),

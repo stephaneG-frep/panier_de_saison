@@ -16,7 +16,7 @@ class RecipesScreen extends StatefulWidget {
 
   final Set<String> favoriteRecipeIds;
   final Future<void> Function(String id) onToggleRecipeFavorite;
-  final Future<void> Function(Recipe recipe) onAddRecipeIngredients;
+  final Future<bool> Function(Recipe recipe) onAddRecipeIngredients;
 
   @override
   State<RecipesScreen> createState() => _RecipesScreenState();
@@ -67,6 +67,11 @@ class _RecipesScreenState extends State<RecipesScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
+              ChoiceChip(
+                selected: _selectedTag == 'legume ancien',
+                label: const Text('Legumes anciens'),
+                onSelected: (_) => setState(() => _selectedTag = 'legume ancien'),
+              ),
               ChoiceChip(
                 selected: _selectedTag == 'Tous',
                 label: const Text('Tous'),

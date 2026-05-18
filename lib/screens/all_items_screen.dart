@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../data/seasonal_items_data.dart';
 import '../models/seasonal_item.dart';
-import '../widgets/month_selector.dart';
 import '../widgets/seasonal_item_card.dart';
 import 'item_detail_screen.dart';
 
-class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({
+class AllItemsScreen extends StatefulWidget {
+  const AllItemsScreen({
     super.key,
     required this.favoriteItemIds,
     required this.basketItemIds,
@@ -23,39 +22,33 @@ class CalendarScreen extends StatefulWidget {
   final Future<void> Function(String id) onToggleBasketItem;
 
   @override
-  State<CalendarScreen> createState() => _CalendarScreenState();
+  State<AllItemsScreen> createState() => _AllItemsScreenState();
 }
 
-class _CalendarScreenState extends State<CalendarScreen> {
-  var _selectedMonth = DateTime.now().month;
+class _AllItemsScreenState extends State<AllItemsScreen> {
+  var _query = '';
   var _filter = 'Tous';
+
+  int get _month => DateTime.now().month;
 
   @override
   Widget build(BuildContext context) {
-    final items = itemsForMonth(_selectedMonth).where((item) {
-      return _filter == 'Tous' ||
-          (_filter == 'Fruits' && item.type == SeasonalItemType.fruit) ||
-          (_filter == 'Legumes' && item.type == SeasonalItemType.legume) ||
-          (_filter == 'Legumes anciens' && isAncientVegetable(item));
-    }).toList();
+    final items = seasonalItems.where(_matches).toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Calendrier')),
+      appBar: AppBar(title: const Text('Tous les produits')),
       body: ListView(
         padding: const EdgeInsets.all(18),
         children: [
-          Text(
-            'Choisis un mois',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
+          TextField(
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Rechercher un fruit ou un legume',
+            ),
+            onChanged: (value) => setState(() => _query = value),
           ),
           const SizedBox(height: 12),
-          MonthSelector(
-            selectedMonth: _selectedMonth,
-            onSelected: (month) => setState(() => _selectedMonth = month),
-          ),
-          const SizedBox(height: 16),
           SegmentedButton<String>(
             segments: const [
               ButtonSegment(value: 'Tous', label: Text('Tous')),
@@ -67,38 +60,36 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
             ],
             selected: {_filter},
-            onSelectionChanged: (value) =>
-                setState(() => _filter = value.first),
+            onSelectionChanged: (value) => setState(() => _filter = value.first),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Text(
-            '${items.length} produits en ${monthNames[_selectedMonth - 1]}',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+            '${items.length} produits disponibles',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: 8),
           if (items.isEmpty)
             const Padding(
               padding: EdgeInsets.all(24),
-              child: Center(child: Text('Aucun produit pour ce filtre.')),
+              child: Center(child: Text('Aucun produit ne correspond au filtre.')),
             )
           else
             ...items.map(
               (item) => SeasonalItemCard(
                 item: item,
-                month: _selectedMonth,
+                month: _month,
                 isFavorite: widget.favoriteItemIds.contains(item.id),
                 onFavorite: () => widget.onToggleItemFavorite(item.id),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => ItemDetailScreen(
                       item: item,
-                      month: _selectedMonth,
+                      month: _month,
                       isFavorite: widget.favoriteItemIds.contains(item.id),
                       inBasket: widget.basketItemIds.contains(item.id),
-                      onToggleFavorite: () =>
-                          widget.onToggleItemFavorite(item.id),
+                      onToggleFavorite: () => widget.onToggleItemFavorite(item.id),
                       onAddToShopping: () => widget.onAddItemToShopping(item),
                       onToggleBasket: () => widget.onToggleBasketItem(item.id),
                     ),
@@ -109,5 +100,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ],
       ),
     );
+  }
+
+  bool _matches(SeasonalItem item) {
+    final typeOk =
+        _filter == 'Tous' ||
+        (_filter == 'Fruits' && item.type == SeasonalItemType.fruit) ||
+        (_filter == 'Legumes' && item.type == SeasonalItemType.legume) ||
+        (_filter == 'Legumes anciens' && isAncientVegetable(item));
+    final queryOk =
+        _query.trim().isEmpty ||
+        item.name.toLowerCase().contains(_query.trim().toLowerCase());
+    return typeOk && queryOk;
   }
 }

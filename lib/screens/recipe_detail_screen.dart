@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app.dart';
 import '../data/seasonal_items_data.dart';
 import '../models/recipe.dart';
 import '../models/seasonal_item.dart';
@@ -16,7 +17,7 @@ class RecipeDetailScreen extends StatelessWidget {
   final Recipe recipe;
   final bool isFavorite;
   final VoidCallback onToggleFavorite;
-  final VoidCallback onAddIngredients;
+  final Future<bool> Function() onAddIngredients;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +27,20 @@ class RecipeDetailScreen extends StatelessWidget {
         .toList();
     return Scaffold(
       appBar: AppBar(title: Text(recipe.title)),
+      floatingActionButton: ValueListenableBuilder<ThemeMode>(
+        valueListenable: ThemeController.mode,
+        builder: (context, themeMode, _) => FloatingActionButton(
+          tooltip: themeMode == ThemeMode.dark
+              ? 'Passer en mode clair'
+              : 'Passer en mode sombre',
+          onPressed: ThemeController.toggle,
+          child: Icon(
+            themeMode == ThemeMode.dark
+                ? Icons.light_mode_outlined
+                : Icons.dark_mode_outlined,
+          ),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -78,7 +93,7 @@ class RecipeDetailScreen extends StatelessWidget {
                 spacing: 8,
                 children: items
                     .map(
-                      (item) => Chip(label: Text('${item.emoji} ${item.name}')),
+                      (item) => Chip(label: Text('${item.displayEmoji} ${item.name}')),
                     )
                     .toList(),
               ),
@@ -96,7 +111,19 @@ class RecipeDetailScreen extends StatelessWidget {
                 ),
               ),
               FilledButton.tonalIcon(
-                onPressed: onAddIngredients,
+                onPressed: () async {
+                  final added = await onAddIngredients();
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        added
+                            ? 'Ingredients ajoutes aux courses.'
+                            : 'Ingredients deja presents dans la liste.',
+                      ),
+                    ),
+                  );
+                },
                 icon: const Icon(Icons.add_shopping_cart),
                 label: const Text('Ajouter les ingredients'),
               ),

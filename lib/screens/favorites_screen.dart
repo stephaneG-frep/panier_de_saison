@@ -27,8 +27,8 @@ class FavoritesScreen extends StatelessWidget {
   final Set<String> basketItemIds;
   final Future<void> Function(String id) onToggleItemFavorite;
   final Future<void> Function(String id) onToggleRecipeFavorite;
-  final Future<void> Function(Recipe recipe) onAddRecipeIngredients;
-  final Future<void> Function(SeasonalItem item) onAddItemToShopping;
+  final Future<bool> Function(Recipe recipe) onAddRecipeIngredients;
+  final Future<bool> Function(SeasonalItem item) onAddItemToShopping;
   final Future<void> Function(String id) onToggleBasketItem;
 
   @override

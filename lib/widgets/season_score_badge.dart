@@ -10,11 +10,10 @@ class SeasonScoreBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final isPeak = item.peakMonths.contains(month);
     final isSeason = item.months.contains(month);
-    final color = isPeak
-        ? Colors.green
-        : (isSeason ? Colors.orange : Colors.red);
+    final color = isPeak ? scheme.primary : (isSeason ? scheme.secondary : scheme.error);
     final label = isPeak
         ? 'Pleine saison'
         : isSeason
@@ -25,12 +24,13 @@ class SeasonScoreBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(99),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         child: Text(
           label,
-          style: TextStyle(color: color.shade700, fontWeight: FontWeight.w800),
+          style: TextStyle(color: color, fontWeight: FontWeight.w800),
         ),
       ),
     );

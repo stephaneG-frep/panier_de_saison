@@ -30,7 +30,7 @@ class SeasonalItemCard extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              Text(item.emoji, style: const TextStyle(fontSize: 42)),
+              Text(item.displayEmoji, style: const TextStyle(fontSize: 42)),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -53,7 +53,7 @@ class SeasonalItemCard extends StatelessWidget {
                 tooltip: 'Favori',
                 onPressed: onFavorite,
                 icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
-                color: isFavorite ? Colors.red : null,
+                color: isFavorite ? scheme.error : scheme.onSurfaceVariant,
               ),
             ],
           ),

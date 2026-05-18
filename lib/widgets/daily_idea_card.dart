@@ -12,7 +12,7 @@ class DailyIdeaCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Card(
-      color: scheme.primaryContainer,
+      color: scheme.tertiaryContainer,
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -28,7 +28,7 @@ class DailyIdeaCard extends StatelessWidget {
                     Text(
                       'Idee repas du jour',
                       style: TextStyle(
-                        color: scheme.onPrimaryContainer.withValues(
+                        color: scheme.onTertiaryContainer.withValues(
                           alpha: 0.75,
                         ),
                         fontWeight: FontWeight.w700,
@@ -38,7 +38,7 @@ class DailyIdeaCard extends StatelessWidget {
                     Text(
                       recipe.title,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: scheme.onPrimaryContainer,
+                        color: scheme.onTertiaryContainer,
                         fontWeight: FontWeight.w900,
                       ),
                     ),

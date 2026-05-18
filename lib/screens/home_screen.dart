@@ -7,6 +7,7 @@ import '../models/seasonal_item.dart';
 import '../widgets/daily_idea_card.dart';
 import '../widgets/month_selector.dart';
 import '../widgets/seasonal_item_card.dart';
+import 'all_items_screen.dart';
 import 'favorites_screen.dart';
 import 'item_detail_screen.dart';
 import 'recipe_detail_screen.dart';
@@ -29,8 +30,8 @@ class HomeScreen extends StatefulWidget {
   final Set<String> basketItemIds;
   final Future<void> Function(String id) onToggleItemFavorite;
   final Future<void> Function(String id) onToggleRecipeFavorite;
-  final Future<void> Function(SeasonalItem item) onAddItemToShopping;
-  final Future<void> Function(Recipe recipe) onAddRecipeIngredients;
+  final Future<bool> Function(SeasonalItem item) onAddItemToShopping;
+  final Future<bool> Function(Recipe recipe) onAddRecipeIngredients;
   final Future<void> Function(String id) onToggleBasketItem;
 
   @override
@@ -57,6 +58,21 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Panier de Saison'),
         actions: [
+          IconButton(
+            tooltip: 'Tous les produits',
+            icon: const Icon(Icons.list_alt),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => AllItemsScreen(
+                  favoriteItemIds: widget.favoriteItemIds,
+                  basketItemIds: widget.basketItemIds,
+                  onToggleItemFavorite: widget.onToggleItemFavorite,
+                  onAddItemToShopping: widget.onAddItemToShopping,
+                  onToggleBasketItem: widget.onToggleBasketItem,
+                ),
+              ),
+            ),
+          ),
           IconButton(
             tooltip: 'Favoris',
             icon: const Icon(Icons.favorite),
@@ -116,6 +132,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ButtonSegment(value: 'Tous', label: Text('Tous')),
               ButtonSegment(value: 'Fruits', label: Text('Fruits')),
               ButtonSegment(value: 'Legumes', label: Text('Legumes')),
+              ButtonSegment(
+                value: 'Legumes anciens',
+                label: Text('Legumes anciens'),
+              ),
             ],
             selected: {_filter},
             onSelectionChanged: (value) =>
@@ -145,7 +165,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final typeOk =
         _filter == 'Tous' ||
         (_filter == 'Fruits' && item.type == SeasonalItemType.fruit) ||
-        (_filter == 'Legumes' && item.type == SeasonalItemType.legume);
+        (_filter == 'Legumes' && item.type == SeasonalItemType.legume) ||
+        (_filter == 'Legumes anciens' && isAncientVegetable(item));
     final queryOk =
         _query.trim().isEmpty ||
         item.name.toLowerCase().contains(_query.trim().toLowerCase());

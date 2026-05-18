@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app.dart';
 import '../models/seasonal_item.dart';
 import '../widgets/month_selector.dart';
 import '../widgets/season_score_badge.dart';
@@ -21,17 +22,31 @@ class ItemDetailScreen extends StatelessWidget {
   final bool isFavorite;
   final bool inBasket;
   final VoidCallback onToggleFavorite;
-  final VoidCallback onAddToShopping;
+  final Future<bool> Function() onAddToShopping;
   final VoidCallback onToggleBasket;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(item.name)),
+      floatingActionButton: ValueListenableBuilder<ThemeMode>(
+        valueListenable: ThemeController.mode,
+        builder: (context, themeMode, _) => FloatingActionButton(
+          tooltip: themeMode == ThemeMode.dark
+              ? 'Passer en mode clair'
+              : 'Passer en mode sombre',
+          onPressed: ThemeController.toggle,
+          child: Icon(
+            themeMode == ThemeMode.dark
+                ? Icons.light_mode_outlined
+                : Icons.dark_mode_outlined,
+          ),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Center(child: Text(item.emoji, style: const TextStyle(fontSize: 96))),
+          Center(child: Text(item.displayEmoji, style: const TextStyle(fontSize: 96))),
           const SizedBox(height: 12),
           Center(
             child: Column(
@@ -86,7 +101,19 @@ class ItemDetailScreen extends StatelessWidget {
                 ),
               ),
               FilledButton.tonalIcon(
-                onPressed: onAddToShopping,
+                onPressed: () async {
+                  final added = await onAddToShopping();
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        added
+                            ? '${item.name} ajoute aux courses.'
+                            : '${item.name} est deja dans la liste.',
+                      ),
+                    ),
+                  );
+                },
                 icon: const Icon(Icons.add_shopping_cart),
                 label: const Text('Ajouter aux courses'),
               ),

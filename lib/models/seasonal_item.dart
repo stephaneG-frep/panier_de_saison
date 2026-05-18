@@ -30,4 +30,24 @@ class SeasonalItem {
   final List<String> recipeIdeas;
 
   String get typeLabel => type == SeasonalItemType.fruit ? 'Fruit' : 'Legume';
+
+  String get displayEmoji {
+    const unsupportedEmoji = {'🫚', '🫜'};
+    if (emoji.trim().isNotEmpty && !unsupportedEmoji.contains(emoji)) {
+      return emoji;
+    }
+    if (type == SeasonalItemType.fruit) return '🍎';
+    switch (category) {
+      case 'racine':
+        return '🥕';
+      case 'tubercule':
+        return '🥔';
+      case 'feuille':
+        return '🥬';
+      case 'fleur':
+        return '🥦';
+      default:
+        return '🥕';
+    }
+  }
 }

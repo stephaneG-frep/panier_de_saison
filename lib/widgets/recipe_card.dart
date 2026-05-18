@@ -16,7 +16,7 @@ class RecipeCard extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback onTap;
   final VoidCallback onFavorite;
-  final VoidCallback onAddIngredients;
+  final Future<bool> Function() onAddIngredients;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class RecipeCard extends StatelessWidget {
                     icon: Icon(
                       isFavorite ? Icons.favorite : Icons.favorite_border,
                     ),
-                    color: isFavorite ? Colors.red : null,
+                    color: isFavorite ? scheme.error : scheme.onSurfaceVariant,
                   ),
                 ],
               ),
@@ -72,7 +72,19 @@ class RecipeCard extends StatelessWidget {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(
-                  onPressed: onAddIngredients,
+                  onPressed: () async {
+                    final added = await onAddIngredients();
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          added
+                              ? 'Ingredients ajoutes aux courses.'
+                              : 'Ingredients deja presents dans la liste.',
+                        ),
+                      ),
+                    );
+                  },
                   icon: const Icon(Icons.add_shopping_cart),
                   label: const Text('Ajouter aux courses'),
                 ),
